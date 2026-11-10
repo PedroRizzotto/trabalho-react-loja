@@ -1,8 +1,4 @@
-# Trabalho React Native - Consumo de API
-
-App em React Native com Expo que consome a Fake Store API (https://fakestoreapi.com).
-
-Telas: Login, Produtos (com filtro por categoria), Detalhes do produto e Informações do grupo.
+# Trabalho Refatorando: React Native – Consumo de API (G1)
 
 ## Integrantes
 
@@ -13,40 +9,37 @@ Telas: Login, Produtos (com filtro por categoria), Detalhes do produto e Informa
 | Leonardo Grimm Maziero | 1137914 |
 | Pedro Henrique Moreschi Rizzotto | 1138024 |
 
-## Como rodar
 
-Precisa ter o Node.js instalado e o app Expo Go no celular.
+## Boas práticas que ja usamos
 
-1. Clonar o repositório:
+### Separação de responsabilidades (SRP)
 
-```bash
-git clone https://github.com/PedroRizzotto/trabalho-react-loja.git
-cd trabalho-react-loja
+![](docs/imagens/1-separacao-camadas.png)
+
+As chamadas da api ficam no api.js e nos services, a tela so chama a função.
+
+### DRY
+
+![](docs/imagens/2-dry-formatarPreco.png)
+
+O formatarPreco é usado no card e no detalhe, entao a formatação do preço ta num lugar so.
+
+### Injeção de dependência
+
+![](docs/imagens/3-injecao-dependencia-card.png)
+
+O CardProduto recebe a função do clique pela prop action, ele nao depende do navigation.
+
+## O que melhoramos
+
+### Coesão nas telas
+
+A Home e o DetalheProduto repetiam o mesmo código de loading/erro pra carregar os dados. Passamos isso pro hook useRequisicao, porque era o código mais repetido do projeto.
+
+```js
+const { dados: produto, loading, erro } = useRequisicao(() => buscarProduto(id), [id]);
 ```
 
-2. Instalar as dependências:
+### Acoplamento da Home com a API
 
-```bash
-npm install
-```
-
-3. Rodar o projeto:
-
-```bash
-npx expo start
-```
-
-4. Ler o QR Code com o app Expo Go no celular.
-
-## Usuários para login
-
-Os usuários disponíveis podem ser vistos acessando o endpoint:
-
-```
-GET https://fakestoreapi.com/users
-```
-
-Usar os campos `username` e `password` de algum usuário da lista. Exemplo:
-
-- usuário: `johnd`
-- senha: `m38rmF$`
+A Home tinha um if pra escolher qual endpoint chamar. Agora tem so um buscarProdutos(categoria) no service que decide isso, e o try/catch repetido foi pro requisicao.js.

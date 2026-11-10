@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -10,11 +10,9 @@ import { Button, Text } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import CardProduto from "../components/CardProduto";
+import useRequisicao from "../hooks/useRequisicao";
 
-import {
-  buscarProdutos,
-  buscarProdutosPorCategoria,
-} from "../services/produtoService";
+import { buscarProdutos } from "../services/produtoService";
 
 const categorias = [
   "electronics",
@@ -24,10 +22,13 @@ const categorias = [
 ];
 
 export default function Home({ navigation }) {
-  const [produtos, setProdutos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState("");
   const [categoria, setCategoria] = useState("");
+  const {
+    dados: produtos,
+    loading,
+    erro,
+    recarregar,
+  } = useRequisicao(() => buscarProdutos(categoria), [categoria]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -49,30 +50,6 @@ export default function Home({ navigation }) {
       },
     });
   }, []);
-
-  useEffect(() => {
-    carregarProdutos();
-  }, [categoria]);
-
-  async function carregarProdutos() {
-    setLoading(true);
-    setErro("");
-
-    let response;
-    if (categoria) {
-      response = await buscarProdutosPorCategoria(categoria);
-    } else {
-      response = await buscarProdutos();
-    }
-
-    if (response.success) {
-      setProdutos(response.produtos);
-    } else {
-      setErro(response.message);
-    }
-
-    setLoading(false);
-  }
 
   function selecionarProduto(produto) {
     navigation.navigate("DetalheProduto", {
@@ -108,7 +85,7 @@ export default function Home({ navigation }) {
       ) : erro ? (
         <View style={styles.erroContainer}>
           <Text style={styles.erro}>{erro}</Text>
-          <Button mode="contained" onPress={carregarProdutos}>
+          <Button mode="contained" onPress={recarregar}>
             Tentar novamente
           </Button>
         </View>

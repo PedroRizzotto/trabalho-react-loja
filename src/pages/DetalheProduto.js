@@ -1,33 +1,18 @@
-import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
 
+import useRequisicao from "../hooks/useRequisicao";
 import { buscarProduto } from "../services/produtoService";
 import formatarPreco from "../utils/formatarPreco";
 
 export default function DetalheProduto({ route }) {
   const { id } = route.params;
 
-  const [produto, setProduto] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState("");
-
-  useEffect(() => {
-    carregarProduto();
-  }, []);
-
-  async function carregarProduto() {
-    setLoading(true);
-    const response = await buscarProduto(id);
-
-    if (response.success) {
-      setProduto(response.produto);
-    } else {
-      setErro(response.message);
-    }
-
-    setLoading(false);
-  }
+  const {
+    dados: produto,
+    loading,
+    erro,
+  } = useRequisicao(() => buscarProduto(id), [id]);
 
   if (loading) {
     return <ActivityIndicator size="large" style={styles.loading} />;
